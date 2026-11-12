@@ -18,22 +18,30 @@
         <h1>AdsPower 控制面板</h1>
         
         <label>環境 ID（user_id）</label>
-        <input type="text" id="accountId" placeholder="例如：k1iyj8sm">
+        <input type="text" id="accountId" placeholder="例如：k1iyj8sm" value="k1iyj8sm">
+
+        <label>要開啟的網址</label>
+        <input type="text" id="targetUrl" placeholder="貼上網址，例如：https://www.threads.net/search?q=關鍵字">
 
         <button onclick="sendTask('open')">開啟瀏覽器</button>
         <button onclick="sendTask('close')">關閉瀏覽器</button>
+        <button onclick="sendTask('open_url')">開啟指定頁面</button>
 
         <div class="result" id="result">等待指令...</div>
     </div>
 
     <script>
-        // 請把下面的連線字串換成你的 Neon 連線字串
-        const NEON_URL = "你的Neon連線字串";
-
         async function sendTask(type) {
             const accountId = document.getElementById('accountId').value.trim();
+            const targetUrl = document.getElementById('targetUrl').value.trim();
+
             if (!accountId) {
                 alert("請輸入環境 ID");
+                return;
+            }
+
+            if (type === 'open_url' && !targetUrl) {
+                alert("請輸入要開啟的網址");
                 return;
             }
 
@@ -43,7 +51,11 @@
                 const response = await fetch('/api/task', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type, account_id: accountId })
+                    body: JSON.stringify({ 
+                        type, 
+                        account_id: accountId,
+                        content: targetUrl 
+                    })
                 });
                 const data = await response.json();
                 document.getElementById('result').textContent = JSON.stringify(data, null, 2);
