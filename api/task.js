@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { type, account_id } = req.body || {};
+    const { type, account_id, content } = req.body || {};
 
     if (!type || !account_id) {
       return res.status(400).json({ error: '缺少參數' });
@@ -23,8 +23,8 @@ export default async function handler(req, res) {
     const sql = neon(process.env.NEON_CONNECTION);
     
     const result = await sql`
-      INSERT INTO tasks (type, account_id, status) 
-      VALUES (${type}, ${account_id}, 'pending') 
+      INSERT INTO tasks (type, account_id, content, status) 
+      VALUES (${type}, ${account_id}, ${content || ''}, 'pending') 
       RETURNING id
     `;
 
