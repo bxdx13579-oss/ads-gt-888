@@ -1,3 +1,5 @@
+import { neon } from '@neondatabase/serverless';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -15,18 +17,25 @@ export default async function handler(req, res) {
     const { type, account_id } = req.body || {};
 
     if (!type || !account_id) {
-      return res.status(400).json({ error: '缺少 type 或 account_id' });
+      return res.status(400).json({ error: '缺少參數' });
     }
 
-    // 暫時先回傳成功，確認 API 可通
+    const sql = neon(process.env.NEON_CONNECTION);
+    
+    const result = await sql`
+      INSERT INTO tasks (type, account_id, status) 
+      VALUES (${type}, ${account_id}, 'pending') 
+      RETURNING id
+    `;
+
     return res.status(200).json({
       success: true,
-      message: '收到任務',
-      type,
-      account_id
+      task_id: result[0].id,
+      message: '任務已加入佇列'
     });
 
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: error.message });
   }
 }
